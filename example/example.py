@@ -240,16 +240,16 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     print(f"Ghi âm '{filename}' đã được lưu vào Google Drive")
     print(f"File ID: {file.get('id')}")
 
-    file_metadata = {
-        'name': output_file_path,
-        'parents': [drive_folder_id]
-    }
+    # file_metadata = {
+    #     'name': output_file_path,
+    #     'parents': [drive_folder_id]
+    # }
 
-    media = MediaFileUpload(output_file_path, mimetype='audio/wav')
-    file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+    # media = MediaFileUpload(output_file_path, mimetype='audio/wav')
+    # file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-    print(f"Ghi âm '{output_file_path}' đã được lưu vào Google Drive")
-    print(f"File ID: {file.get('id')}")
+    # print(f"Ghi âm '{output_file_path}' đã được lưu vào Google Drive")
+    # print(f"File ID: {file.get('id')}")
 
     # Clean up the local file after upload
     os.remove(filename)
