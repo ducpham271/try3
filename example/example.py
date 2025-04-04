@@ -9,6 +9,7 @@ from googleapiclient.http import MediaFileUpload
 from PIL import Image
 import pytz
 import unicodedata
+import re
 
 service_account_info = json.loads(st.secrets["SERVICE_ACCOUNT_JSON"])
 creds = service_account.Credentials.from_service_account_info(service_account_info, scopes=['https://www.googleapis.com/auth/drive.file'])
@@ -16,7 +17,7 @@ drive_folder_id = st.secrets["DRIVE_FOLDER_ID"]  # Get from Streamlit secrets
 service = build('drive', 'v3', credentials=creds)
 vietnam_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 
-def save_ggdrive(audio, _name, _gender, _year_of_birth, _years_parkinson):
+def save_ggdrive(audio, _name, _gender, _year_of_birth, _phone):
     st.audio(audio.export().read())
     
     utc_now = datetime.datetime.now().replace(tzinfo=pytz.utc)
@@ -25,7 +26,7 @@ def save_ggdrive(audio, _name, _gender, _year_of_birth, _years_parkinson):
     __gender = _gender
     if unicodedata.normalize("NFC", _gender) == "Nữ":
         __gender = "Nu"
-    filename = f"{_name}_{__gender}_{_year_of_birth}_{_years_parkinson}_{timestamp}_a.wav"
+    filename = f"{_name}_{__gender}_{_year_of_birth}_{_phone}_{timestamp}_a.wav"
 
     audio.export(filename, format="wav")
     print(filename)
@@ -76,10 +77,9 @@ col1a, col2a = st.columns([1, 4])  # Điều chỉnh tỷ lệ cột tùy ý
 with col1a:
     st.image(logo, width=100)
 with col2a:
-    st.subheader("NỘI DUNG GHI ÂM GIỌNG NÓI ĐỐI VỚI NGƯỜI BỆNH PARKINSON")
+    st.subheader("CHẨN ĐOÁN BỆNH PARKINSON QUA GIỌNG NÓI")
 st.write("""
-         Mục đích của việc ghi âm này là để thực hiện 1 đồ án nghiên cứu: giọng nói của những người bị bệnh Parkinson 
-         sẽ được đối chiếu với giọng nói của những người không bị bệnh Parkinson, từ đó giúp phát hiện ra bệnh Parkinson từ giai đoạn sớm.
+         Giới thiệu: đây là 1 đồ án nghiên cứu, giọng nói ông/bà cô/chú anh/chị sẽ được lưu lại nhằm mục đích nâng cao kết quả nghiên cứu.
          """)
 st.markdown("THÔNG TIN CÁ NHÂN:")
 
@@ -103,11 +103,21 @@ with col4:
 
 col5, col6 = st.columns([1, 2])
 with col5:
-    st.write("Số năm bị bệnh Parkinson:")
+    st.write("Số điện thoại:")
 with col6:
-    years_parkinson = st.number_input("yod_input", min_value=1, step=1, key="yod_input", label_visibility="collapsed")
+    phone = st.text_input("phone_input", key="phone_input", label_visibility="collapsed")
+    # Kiểm tra nếu người dùng đã nhập gì đó
+    if phone:
+        # Regex kiểm tra số điện thoại VN bắt đầu bằng 0 và có 10 chữ số
+        if re.fullmatch(r"0\d{9}", phone):
+            st.success("Số điện thoại hợp lệ!")
+        else:
+            st.error("Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng.")
+st.write("""
+         Ghi chú: Số điện thoại sẽ được dùng để liên hệ lại sau 1 khoảng thời gian 6 tháng hoặc 1 năm để xác nhận tình trạng bệnh nhằm bổ sung thông tin vào dữ liệu nghiên cứu.
+         """)
 st.markdown("---")
-st.markdown("NỘI DUNG GHI ÂM:")
+st.markdown("NỘI DUNG CHẨN ĐOÁN:")
 st.write("Mẫu ghi âm như sau (phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...):")
 # Mở file âm thanh
 audio_file = open('Aaaa_sample.wav', 'rb')
@@ -116,14 +126,14 @@ st.audio(audio_file, format='audio/wav')
 st.write("1. Hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá... (lần 1)")
 audio1 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam1")
 if len(audio1) > 0:
-    save_ggdrive(audio1, name, gender, year_of_birth, years_parkinson)
-st.write("2. Nghỉ 1 chút, hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá... (lần 2)")
-audio2 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam2")
-if len(audio2) > 0:
-    save_ggdrive(audio2, name, gender, year_of_birth, years_parkinson)
-st.write("3. Nhỉ 1 chút nữa, hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá... (lần 3)")
-audio3 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam3")
-if len(audio3) > 0:
-    save_ggdrive(audio3, name, gender, year_of_birth, years_parkinson)
+    save_ggdrive(audio1, name, gender, year_of_birth, phone)
+# st.write("2. Nghỉ 1 chút, hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá... (lần 2)")
+# audio2 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam2")
+# if len(audio2) > 0:
+#     save_ggdrive(audio2, name, gender, year_of_birth, phone)
+# st.write("3. Nhỉ 1 chút nữa, hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá... (lần 3)")
+# audio3 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam3")
+# if len(audio3) > 0:
+#     save_ggdrive(audio3, name, gender, year_of_birth, phone)
 st.markdown("---")
 st.write("Lời cảm ơn: Xin cảm ơn ông/bà cô/chú anh/chị Cộng Đồng PARKINTON VIỆT NAM, đặc biệt là anh admin Tung Mix vì đã hỗ trợ em thực hiện đồ án này!")
