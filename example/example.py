@@ -349,6 +349,7 @@ st.write("1. Hít nhẹ và phát âm nguyên âm “A” thật to, dài và l�
 audio1 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam1")
 if len(audio1) > 0:
     predict = predict_pd(audio1, name, gender, year_of_birth, phone)
+    print(f"Predict: {predict}")
     if predict[0] == 0:
         st.write("Xác suất bị bệnh thấp")
     else:

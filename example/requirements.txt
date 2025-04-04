@@ -2,3 +2,7 @@ streamlit-audiorecorder
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
+librosa
+noisereduce
+praat-parselmouth
+soundfile
