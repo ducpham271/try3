@@ -29,33 +29,18 @@ service = build('drive', 'v3', credentials=creds)
 vietnam_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 
 def extract_info(input_string):
-  parts = input_string.split("_")
+    parts = input_string.split("_")  
+    name = parts[0]
+    gender = parts[1]
+    age = 2025 - int(parts[2])
+    yod = 0
 
-  name = None
-  status = None
-  gender = None
-  age = None
-  yod = None
-
-  if parts[0] != '0':
-      status = 1
-      name = parts[0]
-      gender = parts[1]
-      age = 2025 - int(parts[2])
-      yod = int(parts[3])
-  else:
-      status = 0
-      name = parts[1]
-      gender = parts[2]
-      age = 2025 - int(parts[3])
-
-  return {
-      "name": name,
-      "gender": 1 if gender == 'Nam' else 0,
-      "age": age,
-      "yod": yod,
-      "status": status
-  }
+    return {
+        "name": name,
+        "gender": 1 if gender == 'Nam' else 0,
+        "age": age,
+        "yod": yod,
+    }
 
 def sort_dataframe_by_columns(df, columns=None, ascending=True):
     if columns is None:
@@ -219,7 +204,8 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     else:
         print(f"Skipping {filename} due to errors.")
     df = pd.DataFrame(all_features)
-    df.drop(['file','name'], axis=1, inplace=True)
+    # df.drop(['file','name'], axis=1, inplace=True)
+    df = df.iloc[:, 2:]  # Keeps only columns from index 2 onwards
 
     # biomaker to keep
     candidates = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]
