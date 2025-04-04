@@ -33,13 +33,13 @@ def extract_info(input_string):
     name = parts[0]
     gender = parts[1]
     age = 2025 - int(parts[2])
-    yod = 0
 
     return {
         "name": name,
         "gender": 1 if gender == 'Nam' else 0,
         "age": age,
-        "yod": yod,
+        "yod": 0,
+        "status": 0
     }
 
 def sort_dataframe_by_columns(df, columns=None, ascending=True):
@@ -188,7 +188,7 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     output_file_path = ""
     if preprocessed_audio is not None:
         y, sr = preprocessed_audio
-        output_file_path = f"a_harmonized_{filename}"
+        output_file_path = filename.replace(".wav", "_harmonized.wav")
         # Use soundfile.write instead of librosa.output.write_wav
         sf.write(output_file_path, y, sr)
         print(f"Preprocessed {filename} and saved to {output_file_path}")
@@ -204,13 +204,15 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     else:
         print(f"Skipping {filename} due to errors.")
     df = pd.DataFrame(all_features)
+    print(df)
     # df.drop(['file','name'], axis=1, inplace=True)
     df = df.iloc[:, 2:]  # Keeps only columns from index 2 onwards
-
+    print(df)
     # biomaker to keep
-    candidates = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]
+    candidates = [0, 1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]
     df = df.iloc[:, candidates]
-
+    print('after keep biomaker:')
+    print(df)
     # Save the model and scaler
     model_filename = 'logistic_regression_model.joblib'
     scaler_filename = 'scaler.joblib'
@@ -221,6 +223,8 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
 
     # Predict
     npy_arr = df.to_numpy()
+    print('npy_arr:')
+    print(npy_arr)
     new_data_scaled = loaded_scaler.transform(npy_arr)
     predictions = loaded_model.predict(new_data_scaled)
     print("\nPredictions using loaded model:\n", predictions)
@@ -309,21 +313,22 @@ with col3:
 with col4:
     year_of_birth = st.number_input("yob_input", value=1960, min_value=1900, max_value=2025, step=1, key="yob_input", label_visibility="collapsed")
 
-col5, col6 = st.columns([1, 2])
-with col5:
-    st.write("Số điện thoại:")
-with col6:
-    phone = st.text_input("phone_input", key="phone_input", label_visibility="collapsed")
-    # Kiểm tra nếu người dùng đã nhập gì đó
-    if phone:
-        # Regex kiểm tra số điện thoại VN bắt đầu bằng 0 và có 10 chữ số
-        if re.fullmatch(r"0\d{9}", phone):
-            st.success("Số điện thoại hợp lệ!")
-        else:
-            st.error("Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng.")
-st.write("""
-         Ghi chú: Số điện thoại sẽ được dùng để liên hệ lại sau 1 khoảng thời gian 6 tháng hoặc 1 năm để xác nhận tình trạng bệnh nhằm bổ sung thông tin vào dữ liệu nghiên cứu.
-         """)
+# col5, col6 = st.columns([1, 2])
+# with col5:
+#     st.write("Số điện thoại:")
+# with col6:
+#     phone = st.text_input("phone_input", key="phone_input", label_visibility="collapsed")
+#     # Kiểm tra nếu người dùng đã nhập gì đó
+#     if phone:
+#         # Regex kiểm tra số điện thoại VN bắt đầu bằng 0 và có 10 chữ số
+#         if re.fullmatch(r"0\d{9}", phone):
+#             st.success("Số điện thoại hợp lệ!")
+#         else:
+#             st.error("Số điện thoại không hợp lệ. Vui lòng nhập đúng định dạng.")
+# st.write("""
+#          Ghi chú: Số điện thoại sẽ được dùng để liên hệ lại sau 1 khoảng thời gian 6 tháng hoặc 1 năm để xác nhận tình trạng bệnh nhằm bổ sung thông tin vào dữ liệu nghiên cứu.
+#          """)
+phone = '0908123456'
 st.markdown("---")
 st.markdown("NỘI DUNG CHẨN ĐOÁN:")
 st.write("Mẫu ghi âm như sau (phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...):")
