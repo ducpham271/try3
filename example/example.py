@@ -339,18 +339,20 @@ if "start_time" not in st.session_state:
 
 st.markdown("---")
 st.markdown("NỘI DUNG CHẨN ĐOÁN:")
-st.write("Mẫu ghi âm như sau (phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...):")
-# Mở file âm thanh
-audio_file = open('Aaaa_sample.wav', 'rb')
-# Hiển thị audio player
-st.audio(audio_file, format='audio/wav')
-st.write("Hít nhẹ và phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...")
+
+# st.write("Mẫu ghi âm như sau (phát âm nguyên âm “A” thật to, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...):")
+# # Mở file âm thanh
+# audio_file = open('Aaaa_sample.wav', 'rb')
+# # Hiển thị audio player
+# st.audio(audio_file, format='audio/wav')
+
+st.write("Hít nhẹ và phát âm nguyên âm “A” thật to, đều, dài và lâu nhất có thể, vd Aaaa..., chú ý không thêm dấu vào như Áááá...")
 audio1 = audiorecorder("Ghi âm", "Ngừng ghi âm", custom_style={"backgroundColor": "lightblue"}, key="ghiam1")
 
-# Khi bắt đầu ghi
-if audio1 is None and not st.session_state.recording:
-    st.session_state.recording = True
-    st.session_state.start_time = time.time()
+# # Khi bắt đầu ghi
+# if audio1 is None and not st.session_state.recording:
+#     st.session_state.recording = True
+#     st.session_state.start_time = time.time()
 
 # # Khi ngừng ghi
 # if audio1 is not None and st.session_state.recording:
@@ -358,10 +360,10 @@ if audio1 is None and not st.session_state.recording:
 #     duration = int(time.time() - st.session_state.start_time)
 #     st.success(f"Đã ghi âm xong! Thời lượng: {duration} giây")
 
-# Hiển thị trạng thái đang ghi
-if st.session_state.recording:
-    elapsed = int(time.time() - st.session_state.start_time)
-    st.info(f"🎤 Đang ghi âm... {elapsed} giây")
+# # Hiển thị trạng thái đang ghi
+# if st.session_state.recording:
+#     elapsed = int(time.time() - st.session_state.start_time)
+#     st.info(f"🎤 Đang ghi âm... {elapsed} giây")
 
 if len(audio1) > 0:
     with st.spinner("Đang phân tích..."):
