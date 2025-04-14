@@ -226,7 +226,15 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     npy_arr = df.to_numpy()
     print('npy_arr:')
     print(npy_arr)
-    new_data_scaled = loaded_scaler.transform(npy_arr)
+    index = pd.Index(['gender', 'age', 'MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)',
+       'Spectral_Centroid', 'Spectral_Bandwidth', 'Spectral_Contrast',
+       'Spectral_Rolloff', 'MFCC_1', 'MFCC_2', 'MFCC_3', 'MFCC_4', 'MFCC_5',
+       'MFCC_6', 'MFCC_7', 'MFCC_8', 'MFCC_9', 'MFCC_10', 'MFCC_11', 'MFCC_12',
+       'MFCC_13', 'MFCC_14', 'MFCC_15', 'MFCC_16', 'MFCC_17', 'MFCC_18',
+       'MFCC_19', 'MFCC_20', 'F0_Mean', 'F0_Std', 'F0_Skewness',
+       'F0_Kurtosis'])
+    new_data = pd.DataFrame(npy_arr, columns=index)
+    new_data_scaled = loaded_scaler.transform(new_data)
     predictions = loaded_model.predict(new_data_scaled)
     print("\nPredictions using loaded model:\n", predictions)
 
