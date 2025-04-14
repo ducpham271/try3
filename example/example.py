@@ -285,7 +285,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-logo = Image.open("logo.png")
+logo = Image.open("logo_new.png")
 col1a, col2a = st.columns([1, 4])  # Điều chỉnh tỷ lệ cột tùy ý
 with col1a:
     st.image(logo, width=100)
