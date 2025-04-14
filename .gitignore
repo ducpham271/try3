@@ -172,7 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-.streamlit/
 
 # others
+.streamlit/
 secrets.toml
+.DS_Store
