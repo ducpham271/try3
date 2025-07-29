@@ -167,7 +167,7 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     print(df)
     
     # clean data
-    df.drop(['file','name'], axis=1, inplace=True)
+    df.drop(['file','name','status'], axis=1, inplace=True)
     df["yod"] = df["yod"].fillna(0)
     df = df.fillna(df.mean(numeric_only=True))
 
@@ -182,9 +182,9 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     print('npy_arr:')
     print(npy_arr)
     # index = pd.Index(['gender','age','yod','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12'])
-    # index = ['gender','age','yod','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12']
-    # new_data = pd.DataFrame(npy_arr, columns=index)
-    new_data = pd.DataFrame(npy_arr, columns=loaded_scaler.feature_names_in_)
+    index = ['gender','age','yod','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12']
+    new_data = pd.DataFrame(npy_arr, columns=index)
+    # new_data = pd.DataFrame(npy_arr, columns=loaded_scaler.feature_names_in_)
     new_data_scaled = loaded_scaler.transform(new_data)
     predictions = loaded_model.predict(new_data_scaled)
     print("\nPredictions using loaded model:\n", predictions)
