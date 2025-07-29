@@ -168,7 +168,8 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     
     # clean data
     df.drop(['file','name','status'], axis=1, inplace=True)
-    df["yod"] = df["yod"].fillna(0)
+    # df["yod"] = df["yod"].fillna(0)
+    df["yod"] = 0
     df = df.fillna(df.mean(numeric_only=True))
 
     # Load the model and scaler
