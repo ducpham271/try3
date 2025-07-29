@@ -143,7 +143,7 @@ def extract_features(audio_file):
 def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     st.audio(audio.export().read())
     
-    utc_now = datetime.datetime.now().replace(tzinfo=pytz.utc)
+    utc_now = datetime.now().replace(tzinfo=pytz.utc)
     vietnam_now = utc_now.astimezone(vietnam_timezone)
     timestamp = vietnam_now.strftime("%Y%m%d_%H%M%S")  # Format: YYYYMMDD_HHMMSS
     __gender = _gender
