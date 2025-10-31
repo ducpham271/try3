@@ -65,7 +65,7 @@ def sort_dataframe_by_columns(df, columns=None, ascending=True):
     sorted_df = df.sort_values(by=columns, ascending=ascending)
     return sorted_df
     
-def extract_features(audio_file):
+def extract_features2(audio_file):
     try:
         file_name = os.path.basename(audio_file)
         info = extract_info(file_name)
@@ -75,19 +75,66 @@ def extract_features(audio_file):
         # sr_parkinson and sr_normal are the respective sampling rates (e.g., 22050 Hz by default)
         y_au, sr_au = librosa.load(audio_file,sr=48000,mono=True)
 
-        # harmonization
-        # Trim silence from beginning and end
-        # y_au, _ = librosa.effects.trim(y_au, top_db=20)
-        # Normalize volume (peak normalization)
-        # y_au = y_au / np.max(np.abs(y_au))
-
         # Feature Extraction using librosa (Example: MFCCs)
-        mfccs_au = librosa.feature.mfcc(y=y_au, sr=sr_au, n_mfcc=13)
+        # mfccs_au = librosa.feature.mfcc(y=y_au, sr=sr_au, n_mfcc=13)
 
         # Basic Comparison of Average MFCCs
-        avg_mfccs_au = np.mean(mfccs_au, axis=1)
+        # avg_mfccs_au = np.mean(mfccs_au, axis=1)
 
-        # Feature Extraction using parselmouth (Example: Pitch, Jitter, Shimmer)
+        # Load audio (resample + convert to mono)
+        # y, sr = librosa.load(file_path, sr=48000, mono=True)
+
+        # Feature parameters
+        n_mfcc = 20
+        win_length = 1200
+        hop_length = 480
+        n_fft = 2048
+        n_mels = 40
+        # window = 'hamming'
+        window = 'hann'
+
+        # ===== 🎵 MFCC =====
+        mfcc = librosa.feature.mfcc(
+            y=y_au,
+            sr=sr_au,
+            n_mfcc=n_mfcc,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            win_length=win_length,
+            window=window
+        )
+        mfcc_delta = librosa.feature.delta(mfcc)
+        mfcc_delta2 = librosa.feature.delta(mfcc, order=2)
+
+        # ===== 🔁 IMFCC =====
+        S = librosa.feature.melspectrogram(
+            y=y_au,
+            sr=sr_au,
+            n_fft=n_fft,
+            hop_length=hop_length,
+            win_length=win_length,
+            n_mels=n_mels,
+            window=window
+        )
+
+        # Avoid divide-by-zero
+        S_inv = 1 / (S + np.finfo(float).eps)
+        log_S_inv = np.log(S_inv)
+
+        imfcc = librosa.feature.mfcc(S=log_S_inv, n_mfcc=n_mfcc)
+        imfcc_delta = librosa.feature.delta(imfcc)
+        imfcc_delta2 = librosa.feature.delta(imfcc, order=2)
+
+        # ===== 🧠 Combine all features =====
+        combined = np.vstack([
+            mfcc, mfcc_delta, mfcc_delta2,
+            imfcc, imfcc_delta, imfcc_delta2
+        ])
+
+        # ===== 📊 Aggregate (mean across time) =====
+        feature_vector = np.mean(combined, axis=1)
+
+        # Feature Extraction using parselmouth (Pitch, Jitter, Shimmer, Hnr)
         # Convert audio to Parselmouth Sound objects
         sound_au = parselmouth.Sound(audio_file)
 
@@ -116,10 +163,6 @@ def extract_features(audio_file):
         # Spectral Bandwidth
         bw_au = np.mean(librosa.feature.spectral_bandwidth(y=y_au, sr=sr_au))
 
-        # print(f"ZCR: {zcr_au:.4f}")
-        # print(f"Spectral Centroid: {centroid_au:.2f}")
-        # print(f"Bandwidth: {bw_au:.2f}")
-
         features = {
             "file": file_name,
             "name": info["name"],
@@ -132,7 +175,7 @@ def extract_features(audio_file):
             "zcr": zcr_au,
             "centroid": centroid_au,
             "bandwidth": bw_au,
-            **{f"mfcc_{i}": avg_mfccs_au[i] for i in range(len(avg_mfccs_au))},
+            **{f"mfcc_{i}": feature_vector[i] for i in range(len(feature_vector))},
             "status": info["status"]
         }
         return features
@@ -156,7 +199,7 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     st.write(f"Frame rate: {audio.frame_rate}, Frame width: {audio.frame_width}, Duration: {audio.duration_seconds} seconds")
 
     all_features = []
-    features = extract_features(filename)
+    features = extract_features2(filename)
     if features:
         all_features.append(features)
         print(f"Extracted features for {filename}")
@@ -167,9 +210,7 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     print(df)
     
     # clean data
-    df.drop(['file','name','status'], axis=1, inplace=True)
-    # df["yod"] = df["yod"].fillna(0)
-    df["yod"] = 0
+    df.drop(['file','name','yod','status'], axis=1, inplace=True)
     df = df.fillna(df.mean(numeric_only=True))
 
     # Load the model and scaler
@@ -182,8 +223,8 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     npy_arr = df.to_numpy()
     print('npy_arr:')
     print(npy_arr)
-    index = pd.Index(['gender','age','yod','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12'])
-    # index = ['gender','age','yod','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12']
+    index = pd.Index(['gender','age','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12'])
+    # index = ['gender','age','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12']
     new_data = pd.DataFrame(npy_arr, columns=index)
     # new_data = pd.DataFrame(npy_arr, columns=loaded_scaler.feature_names_in_)
     new_data_scaled = loaded_scaler.transform(new_data)
