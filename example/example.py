@@ -214,21 +214,38 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     df = df.fillna(df.mean(numeric_only=True))
 
     # Load the model and scaler
-    model_filename = 'logistic_regression_model.pkl'
-    scaler_filename = 'scaler.pkl'
-    loaded_model = joblib.load(model_filename)
-    loaded_scaler = joblib.load(scaler_filename)
+    loaded_model = joblib.load("rf_cuckoo_model.pkl")
+    loaded_mask = joblib.load("selected_features_mask.pkl")
+    loaded_scaler = joblib.load("scaler.pkl")
+
+    # # Apply loaded mask and scaler to test data
+    # X_test_loaded = loaded_scaler.transform(X_test)
+    # X_test_loaded_selected = X_test_loaded[:, loaded_mask == 1]
+
+    # y_pred_loaded = loaded_model.predict(X_test_loaded_selected)
 
     # Predict
     npy_arr = df.to_numpy()
     print('npy_arr:')
     print(npy_arr)
-    index = pd.Index(['gender','age','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12'])
+    # index = pd.Index(['gender','age','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12'])
+    # gender,age,jitter,shimmer,hnr,zcr,centroid,bandwidth,mfcc_0,mfcc_1,mfcc_2,mfcc_3,mfcc_4,mfcc_5,mfcc_6,mfcc_7,mfcc_8,mfcc_9,mfcc_10,mfcc_11,mfcc_12,mfcc_13,mfcc_14,mfcc_15,mfcc_16,mfcc_17,mfcc_18,mfcc_19,mfcc_20,mfcc_21,mfcc_22,mfcc_23,mfcc_24,mfcc_25,mfcc_26,mfcc_27,mfcc_28,mfcc_29,mfcc_30,mfcc_31,mfcc_32,mfcc_33,mfcc_34,mfcc_35,mfcc_36,mfcc_37,mfcc_38,mfcc_39,mfcc_40,mfcc_41,mfcc_42,mfcc_43,mfcc_44,mfcc_45,mfcc_46,mfcc_47,mfcc_48,mfcc_49,mfcc_50,mfcc_51,mfcc_52,mfcc_53,mfcc_54,mfcc_55,mfcc_56,mfcc_57,mfcc_58,mfcc_59,mfcc_60,mfcc_61,mfcc_62,mfcc_63,mfcc_64,mfcc_65,mfcc_66,mfcc_67,mfcc_68,mfcc_69,mfcc_70,mfcc_71,mfcc_72,mfcc_73,mfcc_74,mfcc_75,mfcc_76,mfcc_77,mfcc_78,mfcc_79,mfcc_80,mfcc_81,mfcc_82,mfcc_83,mfcc_84,mfcc_85,mfcc_86,mfcc_87,mfcc_88,mfcc_89,mfcc_90,mfcc_91,mfcc_92,mfcc_93,mfcc_94,mfcc_95,mfcc_96,mfcc_97,mfcc_98,mfcc_99,mfcc_100,mfcc_101,mfcc_102,mfcc_103,mfcc_104,mfcc_105,mfcc_106,mfcc_107,mfcc_108,mfcc_109,mfcc_110,mfcc_111,mfcc_112,mfcc_113,mfcc_114,mfcc_115,mfcc_116,mfcc_117,mfcc_118,mfcc_119,status
     # index = ['gender','age','jitter','shimmer','hnr','zcr','centroid','bandwidth','mfcc_0','mfcc_1','mfcc_2','mfcc_3','mfcc_4','mfcc_5','mfcc_6','mfcc_7','mfcc_8','mfcc_9','mfcc_10','mfcc_11','mfcc_12']
+    
+    # Base feature names
+    base_features = ['gender', 'age', 'jitter', 'shimmer', 'hnr', 'zcr', 'centroid', 'bandwidth']
+    # Generate MFCC feature names: mfcc_0 to mfcc_119
+    mfcc_features = [f'mfcc_{i}' for i in range(120)]
+    # Add the target/status column
+    all_features = base_features + mfcc_features + ['status']
+    # Create the pandas Index
+    index = pd.Index(all_features)
+
     new_data = pd.DataFrame(npy_arr, columns=index)
     # new_data = pd.DataFrame(npy_arr, columns=loaded_scaler.feature_names_in_)
     new_data_scaled = loaded_scaler.transform(new_data)
-    predictions = loaded_model.predict(new_data_scaled)
+    new_data_scaled_selected = new_data_scaled[:, loaded_mask == 1]
+    predictions = loaded_model.predict(new_data_scaled_selected)
     print("\nPredictions using loaded model:\n", predictions)
 
     file_metadata = {
