@@ -237,7 +237,7 @@ def predict_pd(audio, _name, _gender, _year_of_birth, _phone):
     # Generate MFCC feature names: mfcc_0 to mfcc_119
     mfcc_features = [f'mfcc_{i}' for i in range(120)]
     # Add the target/status column
-    all_features = base_features + mfcc_features + ['status']
+    all_features = base_features + mfcc_features
     # Create the pandas Index
     index = pd.Index(all_features)
 
